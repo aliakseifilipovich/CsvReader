@@ -2,6 +2,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CsvReader", "CsvReader\CsvReader.csproj", "{AAD4AB4B-CB42-4E25-B9FA-14040FAEE4F7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CsvReaderTests", "CsvReaderTests\CsvReaderTests.csproj", "{F5A040F2-9EA3-4631-8012-4B06E683E541}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +14,9 @@ Global
 		{AAD4AB4B-CB42-4E25-B9FA-14040FAEE4F7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AAD4AB4B-CB42-4E25-B9FA-14040FAEE4F7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AAD4AB4B-CB42-4E25-B9FA-14040FAEE4F7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F5A040F2-9EA3-4631-8012-4B06E683E541}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F5A040F2-9EA3-4631-8012-4B06E683E541}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F5A040F2-9EA3-4631-8012-4B06E683E541}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F5A040F2-9EA3-4631-8012-4B06E683E541}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
