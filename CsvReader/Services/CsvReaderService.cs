@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using CsvReader.Models;
+using CsvReader.ViewModels;
 
 namespace CsvReader.Services
 {
@@ -19,7 +20,8 @@ namespace CsvReader.Services
             {
                 var dynamicData =  csv.GetRecords<dynamic>().ToArray();
 
-                var parsedData = ParseDataFromDynamicType(dynamicData);
+                var parsedData = ParseDataFromDynamicType(dynamicData).OrderBy(x => x.ObservationDate).ToList();
+                
                 return parsedData;
             }
         }
@@ -27,6 +29,27 @@ namespace CsvReader.Services
         public IList<string> GetCsvFileNamesFromCurrentFolder()
         {
             return Directory.GetFiles(Environment.CurrentDirectory, "*.csv").ToList();
+        }
+
+        public IList<QuoteViewModel> ConvertToOutputModel(IList<Quote> quotes)
+        {
+            var groupedQuotesList = quotes
+                .GroupBy(u => u.ObservationDate)
+                .Select(group => new QuoteViewModel {ObservationDate = group.Key, Quotes = group.ToArray()})
+                .ToList();
+
+            var unparsedDateQuotes = groupedQuotesList.Where(x => x.ObservationDate == null).Select(x => x.Quotes).ToList();
+
+            if (!unparsedDateQuotes.Any()) return groupedQuotesList;
+            
+            var groupedQuotesUnparsedDateList = unparsedDateQuotes.First()
+                .GroupBy(u => u.ObservationDateString)
+                .Select(group => new QuoteViewModel {ObservationDateString = group.Key, Quotes = group.ToArray()})
+                .ToList();
+
+            var result = groupedQuotesList.Where(x => x.ObservationDate != null).ToList();
+
+            return  result.Union(groupedQuotesUnparsedDateList).ToList();
         }
 
         private IList<Quote> ParseDataFromDynamicType(dynamic[] fileData)
@@ -55,7 +78,10 @@ namespace CsvReader.Services
             foreach (var col in parsedRow)
             {
                 if (col.Item1.ToLower() == nameof(quote.ObservationDate).ToLower())
-                    quote.ObservationDate = col.Item2?.ToString() ?? string.Empty;
+                {
+                    quote.ObservationDate = ConvertToDate(col.Item2?.ToString());
+                    quote.ObservationDateString = quote.ObservationDate == null ? col.Item2?.ToString() : string.Empty;
+                }
                 else if (col.Item1.ToLower() == nameof(quote.Shorthand).ToLower())
                     quote.Shorthand = col.Item2?.ToString() ?? string.Empty;
                 else if (col.Item1.ToLower() == nameof(quote.From).ToLower())
@@ -68,6 +94,10 @@ namespace CsvReader.Services
 
             return quote;
         }
-        
+
+        private DateTime? ConvertToDate(string date)
+        { 
+            return DateTime.TryParse(date, out _) ? DateTime.Parse(date).Date : null;
+        }
     }
 }

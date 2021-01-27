@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Autofac;
 using CsvReader.Services;
+using CsvReader.ViewModels;
 
 namespace CsvReader
 {
@@ -50,12 +51,10 @@ namespace CsvReader
             try
             {
                 var list = readerService.ReadCsvFile(availableFileNames.ElementAtOrDefault(value));
+                var result = readerService.ConvertToOutputModel(list);
+
+                WriteOutput(result);
                 
-                foreach (var item in list)
-                {
-                    Console.WriteLine("{0},{1},{2},{3},{4}",item.ObservationDate,item.Shorthand, item.From, item.To, item.Price);
-                    
-                }
                 Console.WriteLine("\nComplete!");
             }
             catch (Exception e)
@@ -65,6 +64,55 @@ namespace CsvReader
             }
 
             Console.ReadKey();
+        }
+
+        private static void WriteOutput(IList<QuoteViewModel> result)
+        {
+            var shorthands = new List<string>();
+
+            foreach (var item in result)
+            {
+                foreach (var quote in item.Quotes)
+                {
+                    shorthands.Add(quote.Shorthand);
+                }
+            }
+
+            var shorthandsQuotes = shorthands.GroupBy(x => x).Select(g => new {g.Key, Value = string.Empty }).OrderBy(x => x.Key).ToArray();
+            
+            Console.Write(",");
+
+            for (int i = 0; i < shorthandsQuotes.Length; i++)
+            {
+                Console.Write(shorthandsQuotes[i].Key);
+                if(i != shorthandsQuotes.Length-1)
+                    Console.Write(",");
+            }
+            Console.WriteLine();
+
+            int unparsedValuesRowNum = 0;
+            foreach (var item in result)
+            {
+                if(item.ObservationDate.HasValue)
+                    Console.Write(item.ObservationDate.Value.ToShortDateString() + ",");
+                else
+                {
+                    if(unparsedValuesRowNum < 1)
+                        Console.WriteLine("Unparsed dates:");
+                    
+                    Console.Write(item.ObservationDateString + ",");
+                    unparsedValuesRowNum++;
+                }
+                
+                for (int i = 0; i < shorthandsQuotes.Length; i++)
+                {
+                    Console.Write(item.Quotes.FirstOrDefault(x => x.Shorthand == shorthandsQuotes[i].Key)?.Price ?? string.Empty);
+                    if(i != shorthandsQuotes.Length-1)
+                        Console.Write(",");
+                }
+                Console.WriteLine();
+
+            }
         }
 
         private static int GetInputFileNumber(IList<string> availableFileNames)
